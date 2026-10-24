@@ -1,0 +1,6 @@
+Flask>=3.0
+pandas>=2.2
+numpy>=1.26
+psutil>=5.9
+pyspark>=3.5
+pytest>=8.0
