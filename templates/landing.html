@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% set sel = demo.budget.scenarios[demo.budget.selected] %}
+{% block main %}
+<section class="hero"><div class="wrap grid">
+  <div>
+    <h1>Start with a product idea. Know what to test on YouTube.</h1>
+    <p class="lede">No ad yet? Describe the product and audience. AdPilot proposes advertising concepts, finds relevant public YouTube videos to compare against, and plans a first test. Already advertising? Upload your results and see what the numbers support.</p>
+    <div class="row"><a class="btn" href="/analyze">Plan Your YouTube Ads</a><a class="btn ghost" href="/analyze?demo=idea">Explore Demo</a></div>
+    <p class="fine" style="margin-top:18px">Works without any paid service or existing video. When the data is too thin, AdPilot says so instead of guessing.</p>
+  </div>
+  {% set picks = idea.concepts|selectattr('id','in',idea.selected_concepts)|list %}{% set plan = idea.budget_plan %}
+  <aside class="preview" aria-label="Sample analysis preview">
+    <span class="badge demo tag">Demo inputs, calculated live</span>
+    <p class="fine" style="margin:6px 0 4px">{{ idea.profile.product }}, goal: {{ idea.objective_label|lower }}. No ad or results supplied.</p>
+    {% for c in picks[:3] %}<div class="decision"><small>{{ c.title }} <span class="badge">proposal, not tested</span></small><strong>{{ c.hook }}</strong></div>{% endfor %}
+    <div class="decision"><small>First test plan for {{ plan.currency }} {{ '{:,.0f}'.format(plan.total) }} (exploratory)</small>
+      <div class="alloc" role="img" aria-label="Test budget plan">{% for l in plan.lines %}<div class="{{ 'cu' if l.role=='held' else 'c' ~ (loop.index0 % 6) }}" style="width:{{ l.percent }}%">{{ l.percent|round|int }}%</div>{% endfor %}</div>
+      <div class="legend">{% for l in plan.lines %}<span><i class="{{ 'cu' if l.role=='held' else 'c' ~ (loop.index0 % 6) }}"></i>{{ l.name }}</span>{% endfor %}</div></div>
+  </aside>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div><h4>Describe the product</h4><p>Industry, audience, market and goal. A product idea is enough.</p></div>
+    <div><h4>Choose your starting point</h4><p>No ads yet, or ads you already run with results to analyze.</p></div>
+    <div><h4>Review concepts and references</h4><p>Editable concepts, plus relevant public YouTube videos found for you.</p></div>
+    <div><h4>Set a budget</h4><p>A first-test plan for beginners; an evidence-based split when results exist.</p></div>
+    <div><h4>Read the report</h4><p>What is measured, observed, guessed and unknown, with next actions.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>For advertisers with results: two questions, answered separately</h2>
+  <p class="lede">What has worked is not the same as what to learn next. AdPilot keeps them apart.</p>
+  <div class="two" style="margin-top:24px">
+    <div class="panel"><h3>Best performer</h3><p>Ranks ads on measured results for your objective, only among ads with enough data. If the gap is within noise, it reports the result as inconclusive instead of crowning a winner.</p></div>
+    <div class="panel"><h3>Next best test</h3><p>Weighs how uncertain each ad is, where its creative looks weakest, and how promising its results are. It gives a hypothesis, the metric to watch, a test budget and a stopping rule.</p></div>
+  </div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <h2>A sample comparison for existing advertisers</h2>
+  <p class="lede">Calculated from the demo inputs on this page. Higher creative scores mean the supplied text ticks more checklist items. They do not predict sales.</p>
+  <div class="tbl-wrap" style="margin-top:20px"><table><caption>Demo data. Measured metrics are for {{ demo.objective_label|lower }}.</caption>
+    <thead><tr><th>Advertisement</th><th class="num">ROAS</th><th class="num">CPA</th><th class="num">Conv. rate</th><th>Evidence</th><th class="num">Creative checklist</th></tr></thead><tbody>
+    {% for a in demo.ads %}<tr {% if demo.best_performer and demo.best_performer.id==a.id %}class="best"{% endif %}><td>{{ a.name }}</td>
+      <td class="num">{{ '%.2f'|format(a.metrics.roas) if a.metrics.roas is not none else 'n/a' }}</td><td class="num">{{ '{:,.0f}'.format(a.metrics.cpa) if a.metrics.cpa is not none else 'n/a' }}</td>
+      <td class="num">{{ '%.2f'|format(a.metrics.conv_rate) ~ '%' if a.metrics.conv_rate is not none else 'n/a' }}</td>
+      <td><span class="badge {{ a.evidence.level|lower }}">{{ a.evidence.level }}</span></td><td class="num">{{ a.creative.overall if a.creative and a.creative.overall is not none else 'n/a' }}</td></tr>{% endfor %}
+    </tbody></table></div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Budget splits you can check</h2>
+  <div class="two" style="margin-top:20px">
+    <div><p class="lede">Proven budget follows measured results and how much data backs them. A testing reserve funds ads that are still unproven. Limits per ad are always respected, and the lines add up to your total.</p>
+      <p>Conservative, balanced and growth-focused views are scenario labels. None of them promises a return.</p></div>
+    <div class="panel">
+      {% for key, s in demo.budget.scenarios.items() %}{% if s.lines %}<p class="fine" style="margin:0 0 4px">{{ s.scenario_label }} <span class="badge demo">demo</span></p>
+      <div class="alloc">{% for l in s.lines %}<div class="c{{ loop.index0 % 6 }}" style="width:{{ l.percent }}%">{{ l.percent|round|int }}%</div>{% endfor %}</div>{% endif %}{% endfor %}
+    </div>
+  </div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <h2>Find competitor videos, honestly</h2>
+  <div class="two"><div><p class="lede">With an optional YouTube Data API key, AdPilot searches public videos for your product and compares their text with your concepts or ads. You can also paste a single video link; neither is required.</p></div>
+  <div><p>A public video is not proof of a paid ad, so results are labelled Relevant Public Video or Potential Advertising Creative. Only a source you record yourself can make one a Verified Paid Ad. Competitor results are never estimated from views or likes.</p></div></div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="two"><div><h2>Big Data Laboratory</h2><p class="lede">Generate 10,000 to 10,000,000 synthetic campaign records and run the same analysis in Pandas, a local MapReduce, and PySpark. Times and memory are measured, not invented.</p>
+    <a class="btn ghost" href="/lab">Open the laboratory</a></div>
+  <div class="panel"><p style="margin:0">Small data can run faster in Pandas because Spark pays a start-up cost. The lab reports both processing time and start-up time so you can see where each engine pays.</p></div></div>
+</div></section>
+{% endblock %}
