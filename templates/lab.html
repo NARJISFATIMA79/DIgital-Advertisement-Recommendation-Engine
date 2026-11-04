@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Big Data Laboratory - AdPilot{% endblock %}
+{% block main %}<section><div class="wrap">
+  <h1 style="font-size:2.6rem">Big Data Laboratory</h1>
+  <p class="lede">Generate synthetic campaign records, then run the same analysis in Pandas, a local MapReduce, and PySpark. Every number below comes from a real run on this computer.</p>
+  <div class="callout info"><b>The task:</b> group records by industry and ad format, then sum impressions, views, clicks, spend, conversions and revenue, and derive CTR, CPC, CPA and ROAS from the sums. All engines read the same CSV file.</div>
+  <div class="two" style="margin-top:24px">
+    <div class="panel"><h3>1. Choose the data</h3><div class="choice" id="sizes" style="grid-template-columns:1fr 1fr">{% for s in sizes %}<label><input type="radio" name="size" value="{{ s }}" {% if s==10000 %}checked{% endif %}>{{ '{:,}'.format(s) }} records</label>{% endfor %}</div>
+      <div class="field" style="margin-top:14px"><label for="seed">Random seed <span class="hint">same seed gives the same data</span></label><input id="seed" type="number" value="42"></div>
+      <p class="fine">All generated records are synthetic and carry <code>is_synthetic=1</code>. Counts stay consistent: clicks never exceed impressions, conversions never exceed clicks, and completions never exceed views. About 110 bytes per record; 10 million records need roughly 1.1 GB of disk.</p>
+      <div id="big-warn" class="callout" hidden>10 million records can take several minutes in MapReduce and need a few GB of free memory and disk. Close other heavy programs first.</div></div>
+    <div class="panel"><h3>2. Choose the engines</h3><div class="choice" style="grid-template-columns:1fr"><label><input type="checkbox" value="pandas" checked>Pandas<small>One process, in memory</small></label><label><input type="checkbox" value="mapreduce" checked>Local MapReduce<small>Map, combine, shuffle, reduce with Python multiprocessing. Not Hadoop.</small></label><label><input type="checkbox" value="spark" id="spark-box">Apache Spark (PySpark)<small id="spark-note">Checking availability...</small></label></div>
+      <div class="row" style="margin-top:18px"><button class="btn" id="run">Generate and run</button><button class="btn ghost" id="gen">Generate data only</button></div></div></div>
+  <div id="status" style="margin-top:20px"></div><div id="out"></div>
+  <div id="hist-wrap" style="margin-top:40px"></div>
+</div></section>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/lab.js') }}"></script>{% endblock %}
