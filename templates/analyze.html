@@ -1,0 +1,88 @@
+{% extends "base.html" %}{% block title %}New analysis - AdPilot{% endblock %}
+{% block main %}
+<div class="wrap">
+<div id="wizard" class="wiz">
+  <ol class="rail" id="rail"><li data-s="0">Business and product</li><li data-s="1">Your situation</li><li data-s="2">Your inputs</li><li data-s="3">Advertising concepts</li><li data-s="4">Competitor research</li><li data-s="5">Budget</li><li data-s="6">Review and analyze</li></ol>
+  <div>
+    <div id="demo-banner" class="callout gold" hidden><b>Demo data loaded.</b> These inputs are an example. Results are calculated live from them and labelled as demo.</div>
+    <div id="draft-banner" class="callout info" hidden>Your unfinished draft was restored. <button class="btn ghost small" id="draft-clear">Start over</button></div>
+
+    <div class="pane" data-s="0"><h2>Tell us about the product</h2><p class="lede">A product idea is enough. You do not need an advertisement, a video link or any campaign data.</p>
+      <div class="fgrid"><div class="field"><label for="brand">Business or brand name <span class="hint">optional</span></label><input id="brand" autocomplete="organization"></div>
+      <div class="field" data-f="industry"><label for="industry">Industry category</label><select id="industry"><option value="">Choose a category</option>{% for c in categories %}<option value="{{ c.key }}">{{ c.label }}</option>{% endfor %}</select><div class="err" hidden></div></div></div>
+      <div class="field" id="other-wrap" hidden data-f="other_desc"><label for="other_desc">Describe your business</label><input id="other_desc" placeholder="e.g. Home tutoring marketplace"><div class="err" hidden></div></div>
+      <div class="field" data-f="product"><label for="product">Product or service you want to advertise</label><input id="product" placeholder="e.g. Herbal skincare moisturizer, SQL course, family dinner deals"><div class="err" hidden></div></div>
+      <div class="fgrid"><div class="field"><label for="benefit">Main benefit <span class="hint">optional, in your own words</span></label><input id="benefit" placeholder="e.g. Hydrates dry skin"></div><div class="field"><label for="problem">Problem it solves <span class="hint">optional</span></label><input id="problem" placeholder="e.g. dry, tight skin by midday"></div></div>
+      <div class="fgrid"><div class="field"><label for="audience">Target audience</label><input id="audience" placeholder="e.g. Women aged 18 to 35"></div><div class="field"><label for="market">Market or country</label><input id="market" value="Pakistan"></div></div>
+      <div class="fgrid"><div class="field"><label for="price">Typical price or customer value <span class="hint">optional</span></label><input id="price" type="number" min="0" step="any"></div><div class="field"><label for="goal">Business goal <span class="hint">optional</span></label><input id="goal" placeholder="e.g. 300 online orders a month"></div></div>
+      <div class="field" data-f="objective"><label>What should the advertising achieve?</label><div class="choice" id="objectives">{% for o in objectives %}<label><input type="radio" name="objective" value="{{ o.key }}">{{ o.label }}<small id="ob-{{ o.key }}"></small></label>{% endfor %}</div><div class="err" hidden></div></div>
+      <div id="strategy-note" class="callout info" hidden></div></div>
+
+    <div class="pane" data-s="1"><h2>Where are you starting from?</h2><p class="lede">Both paths work. You can switch later without retyping the product details.</p>
+      <div class="choice" id="modes" style="grid-template-columns:1fr 1fr"><label><input type="radio" name="mode" value="idea">I have a product idea and need an advertising strategy<small>AdPilot proposes concepts, finds competitor videos on YouTube and plans a first test. No ad or data needed.</small></label>
+        <label><input type="radio" name="mode" value="existing">I already have advertisements and want to analyze them<small>Compare ads, calculate metrics from your results, and plan budget from evidence. Even one ad gets creative feedback.</small></label></div>
+      <div class="err" id="mode-err" hidden>Choose where you are starting from.</div></div>
+
+    <div class="pane" data-s="2">
+      <div id="idea-inputs"><h2>Anything you already have in mind?</h2><p class="lede">Everything on this page is optional. Skip it and AdPilot will propose ideas from your product details.</p>
+        <div class="field"><label for="initial_hook">An opening line you like <span class="hint">optional</span></label><input id="initial_hook" placeholder="e.g. Tired of dry skin by noon?"></div>
+        <div class="fgrid"><div class="field"><label for="offer">An offer you could run <span class="hint">optional</span></label><input id="offer" placeholder="e.g. 20% off the first order"></div>
+        <div class="field" data-f="own_url"><label for="own_url">A draft or existing YouTube video of yours <span class="hint">optional</span></label><input id="own_url" placeholder="https://www.youtube.com/watch?v=..."><div class="err" hidden></div></div></div>
+        <p class="fine">A link to your own video is only stored with the report. AdPilot cannot see your private analytics or the video's content from a link. You do not need one.</p></div>
+      <div id="existing-inputs"><h2>Add your YouTube ads</h2><p class="lede">One ad is enough for creative feedback; compare two or more once you have results for them. Everything except the name is optional. Do not enter organic view counts as ad results.</p>
+        <div id="ads"></div><div class="row"><button class="btn ghost" id="add-ad">Add another ad</button></div>
+        <div class="panel" style="margin-top:24px"><h3>Historical results by file</h3><p>Upload a CSV with one row per ad per day (or any period). Rows are matched to your ads by name.</p>
+          <div class="row"><input type="file" id="csv-file" accept=".csv,text/csv" style="max-width:340px"><a class="btn ghost small" href="/api/sample-csv">Download CSV template</a><button class="btn ghost small" id="csv-clear" hidden>Remove file</button></div><div id="csv-report" style="margin-top:14px"></div></div></div></div>
+
+    <div class="pane" data-s="3"><h2>Advertising concepts</h2>
+      <div class="callout gold"><b>These are creative proposals, not advertisements, and none has been tested.</b> They are built from templates and your answers; no AI model is used. Fill any [bracketed] part with facts you can prove. Choose up to four to compare.</div>
+      <div class="row" style="margin:16px 0"><button class="btn ghost" id="regen">Generate again</button><button class="btn ghost" id="add-concept">Add my own concept</button><span class="fine" id="concept-note"></span></div>
+      <div id="concepts"></div></div>
+
+    <div class="pane" data-s="4"><h2>Competitor research <span class="badge">optional</span></h2>
+      <div class="callout info">AdPilot searches <b>public YouTube videos</b> related to your product. A public video is not proof of a paid ad, and views or likes are not advertising results. To check paid status, use the <a href="https://adstransparency.google.com/" target="_blank" rel="noopener">Google Ads Transparency Center</a>.</div>
+      <div id="disc-off" class="callout" style="margin-top:14px" hidden><b>Automatic discovery is off.</b> No YouTube API key is configured, so AdPilot will not invent results. Everything else works. Add a competitor video by link or by hand below, or set up a key (see the README).</div>
+      <h3 style="margin-top:24px">Searches</h3><p class="fine" id="q-help">Searches are generated from your answers. When a key is configured, the first few run automatically.</p>
+      <div id="q-list" style="margin:10px 0"></div>
+      <div class="row"><input id="q-custom" placeholder="Add your own search" style="max-width:320px"><button class="btn ghost small" id="q-add">Add search</button></div>
+      <div class="row" style="margin-top:12px"><div><label for="per-q">Results per search</label><select id="per-q"><option>5</option><option selected>8</option><option>10</option></select></div><div><label for="region">Region code <span class="hint">optional, e.g. PK</span></label><input id="region" maxlength="2" style="width:90px"></div>
+        <button class="btn" id="find" style="margin-top:22px">Search selected</button><button class="btn ghost" id="refresh" style="margin-top:22px" hidden>Refresh (new API calls)</button></div>
+      <div id="disc-status" class="fine" style="margin-top:10px" aria-live="polite"></div>
+      <div class="panel" id="tv-panel" style="margin:14px 0">
+        <h3 style="margin:0 0 6px">Paid-ad verification <span class="badge" id="tv-state"></span></h3>
+        <p class="fine">Separate from video discovery. Matches the videos above against Google Ads Transparency Center records supplied by a third-party provider (SearchApi). Only an <b>exact YouTube video-ID match</b> verifies a video as a paid ad; name or text similarity never does. Unmatched videos stay <b>Unverified</b> and are used as public reference content.</p>
+        <div class="row" style="margin-top:8px"><div class="field" style="flex:1;min-width:220px"><label for="tv-adv">Advertiser names, websites or AR… IDs <span class="hint">optional, comma-separated. Improves matching when a channel name differs from the advertiser</span></label><input id="tv-adv" maxlength="300" placeholder="e.g. glow.example, Glow Cosmetics"></div>
+          <div><label for="tv-max">Creatives to inspect</label><select id="tv-max"><option value="5">5 (cheapest)</option><option value="10" selected>10</option><option value="20">20</option></select></div>
+          <button class="btn small" id="tv-run" style="margin-top:22px">Check Transparency Center</button><button class="btn ghost small" id="tv-refresh" style="margin-top:22px" hidden>Refresh</button></div>
+        <div id="tv-status" class="fine" style="margin-top:8px" aria-live="polite"></div>
+      </div>
+      <div id="disc-filters" class="row" style="margin:14px 0" hidden><div><label for="f-sort">Sort by</label><select id="f-sort"><option value="relevance">Relevance to my profile</option><option value="date">Newest first</option><option value="title">Title</option></select></div><div><label for="f-status">Show</label><select id="f-status"><option value="">All results</option><option>Relevant Public Video</option><option>Potential Advertising Creative</option><option>Verified Paid Ad</option></select></div><div><label for="f-text">Filter by word</label><input id="f-text" placeholder="e.g. demo"></div><span class="fine" id="f-count"></span></div>
+      <div id="vgrid" class="vgrid"></div>
+      <h3 style="margin-top:28px">Add a specific competitor video <span class="badge">optional</span></h3>
+      <div class="panel"><div class="field" data-f="mv_link"><label for="mv-link">YouTube link</label><div class="row"><input id="mv-link" placeholder="https://www.youtube.com/watch?v=...  or  https://youtu.be/...  or a Shorts link" style="flex:1;min-width:240px"><button class="btn ghost" id="mv-fetch">Add from link</button></div><div class="err" hidden></div></div>
+        <p class="fine" id="mv-explain">AdPilot can read a public video's title, description, channel, date, duration and public view and like counts. It cannot read private videos, the spoken words, visuals, analytics, or tell whether the video is a paid ad.</p>
+        <div id="mv-result" aria-live="polite"></div>
+        <details style="margin-top:12px"><summary>Add by hand instead (no link or no API key)</summary><div class="fgrid" style="margin-top:10px"><div class="field"><label for="mv-title">Title</label><input id="mv-title"></div><div class="field"><label for="mv-url">Link <span class="hint">optional</span></label><input id="mv-url"></div></div>
+          <div class="field"><label for="mv-desc">Description or notes <span class="hint">optional</span></label><textarea id="mv-desc"></textarea></div><div class="field"><label for="mv-script">Transcript or script <span class="hint">optional</span></label><textarea id="mv-script"></textarea></div>
+          <div class="row"><button class="btn ghost" id="mv-add">Add this video</button><button class="btn ghost small" id="mv-sample">Use two sample entries (not from YouTube)</button></div></details></div>
+      <div id="sel-list" style="margin-top:18px"></div>
+      <h3 style="margin-top:28px">Competitor performance numbers <span class="badge">optional</span></h3><p class="fine">Only if you legitimately have them (for example from a partner). They are treated as unverified.</p><div id="cp-list"></div><button class="btn ghost small" id="cp-add">Add competitor numbers</button></div>
+
+    <div class="pane" data-s="5"><h2>Set the budget <span class="badge">optional</span></h2><p class="lede" id="budget-lede"></p>
+      <div class="fgrid"><div class="field" data-f="total"><label for="total">Total campaign budget</label><input id="total" type="number" min="0" step="any" placeholder="100000"><div class="err" hidden></div></div>
+      <div class="field"><label for="currency">Currency <span class="hint">no conversion is performed</span></label><select id="currency"><option>PKR</option><option>USD</option><option>EUR</option><option>GBP</option><option>AED</option><option>SAR</option><option>INR</option></select></div></div>
+      <div class="only-idea"><div class="field"><label for="share">Share of budget for the first test (%)</label><input id="share" type="number" min="1" max="100" step="any" value="40"></div><p class="fine">The rest is held back until the test shows which concept deserves it.</p></div>
+      <div class="only-existing"><div class="fgrid3"><div class="field"><label for="days">Campaign duration (days)</label><input id="days" type="number" min="1" value="30"></div><div class="field"><label for="minad">Minimum per ad <span class="hint">optional</span></label><input id="minad" type="number" min="0" step="any"></div><div class="field"><label for="maxad">Maximum per ad <span class="hint">optional</span></label><input id="maxad" type="number" min="0" step="any"></div></div>
+      <div class="fgrid"><div class="field"><label for="reserve">Experimentation reserve (% of total) <span class="hint">optional</span></label><input id="reserve" type="number" min="0" max="100" step="any" placeholder="e.g. 15"></div>
+      <div class="field"><label for="scenario">Scenario to show first</label><select id="scenario"><option value="balanced">Balanced</option><option value="conservative">Conservative</option><option value="growth">Growth-focused</option></select></div></div>
+      <p class="fine">Without a reserve, each scenario applies its own starting assumption (5%, 10% and 20%).</p></div></div>
+
+    <div class="pane" data-s="6"><h2>Review and analyze</h2><div id="review"></div><div class="row" style="margin-top:20px"><button class="btn" id="run">Analyze</button></div><div id="run-status" style="margin-top:16px" aria-live="polite"></div></div>
+    <div class="nav-btns"><button class="btn ghost" id="back">Back</button><button class="btn" id="next">Continue</button></div>
+  </div>
+</div>
+<div id="results" hidden></div>
+</div>
+{% endblock %}
+{% block scripts %}<script>window.ADPILOT={youtube:{{ 'true' if youtube_configured else 'false' }},transparency:{{ 'true' if transparency_configured else 'false' }},strategies:{{ strategies|tojson }},objectiveLabels:{{ objectives|tojson }}};</script>
+<script src="{{ url_for('static', filename='js/results.js') }}"></script><script src="{{ url_for('static', filename='js/analyze.js') }}"></script>{% endblock %}
