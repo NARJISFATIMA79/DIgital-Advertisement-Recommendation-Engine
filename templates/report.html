@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}Report - AdPilot{% endblock %}
+{% block main %}<div class="wrap"><div id="rep" style="padding:30px 0 60px"><div class="loading"><div class="spin"></div>Loading report...</div></div></div>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/results.js') }}"></script><script>
+(async()=>{const box=$("#rep");try{const r=await api("/api/reports/{{ rid }}");box.innerHTML=`<p class="fine noprint"><a href="/dashboard">Back to dashboard</a>. Saved ${esc(new Date(r.created).toLocaleString())}.</p>`+renderResults(r.result);wireResults(box,r.result);}catch(e){box.innerHTML=`<div class="callout"><b>This report could not be opened.</b> ${esc(e.message)}</div>`;}})();
+</script>{% endblock %}
